@@ -55,7 +55,7 @@ int main() {
   int lane = 1;
 
   // Reference velocity.
-  double ref_vel = 45.0; // mph
+  double ref_vel = 0.0; // mph. Starting speed. Will acc slowly. Search "if ( ref_vel < MAX_SPEED ) {"
   h.onMessage([&ref_vel, &lane,
   //h.onMessage([
                &map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
@@ -99,7 +99,8 @@ int main() {
           vector<double> next_x_vals;
           vector<double> next_y_vals;
           
-          // Code from darienmt
+          // Start of code from darienmt
+          // https://youtu.be/7sI3VHFPP0w
           // Provided previous path point size.
           int prev_size = previous_path_x.size();
 
@@ -132,6 +133,7 @@ int main() {
               double check_speed = sqrt(vx*vx + vy*vy);
               double check_car_s = sensor_fusion[i][5];
               // Estimate car s position after executing previous trajectory.
+              // Check s value greater than mine and s gap
               check_car_s += ((double)prev_size*0.02*check_speed);
 
               if ( car_lane == lane ) {
@@ -139,10 +141,10 @@ int main() {
                 car_ahead |= check_car_s > car_s && check_car_s - car_s < 30;
               } else if ( car_lane - lane == -1 ) {
                 // Car left
-                car_left |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
+                car_left |= car_s - 15 < check_car_s && car_s + 20 > check_car_s;
               } else if ( car_lane - lane == 1 ) {
                 // Car right
-                car_righ |= car_s - 30 < check_car_s && car_s + 30 > check_car_s;
+                car_righ |= car_s - 15 < check_car_s && car_s + 20 > check_car_s;
               }
           }
 
@@ -167,6 +169,7 @@ int main() {
               }
             }
             if ( ref_vel < MAX_SPEED ) {
+              // Acc slowly
               speed_diff += MAX_ACC;
             }
           }
@@ -260,6 +263,7 @@ int main() {
             double x_ref = x_point;
             double y_ref = y_point;
 
+            // Rotate back to nomal after rotating it eailer
             x_point = x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw);
             y_point = x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw);
 
@@ -276,8 +280,8 @@ int main() {
            *   sequentially every .02 seconds
            */
 
-          double dist_inc = 0.3;
-          for (int i = 0; i < 50; i++) {
+          //double dist_inc = 0.3;
+          //for (int i = 0; i < 50; i++) {
             /*
             // Go with the lane
             double next_s = car_s+(i+1)*dist_inc;
@@ -291,7 +295,7 @@ int main() {
             next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
             next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
             */
-          }
+          //}
           
           
           msgJson["next_x"] = next_x_vals;
